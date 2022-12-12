@@ -1,0 +1,1 @@
+# django-projesini-yay-na-alma

@@ -36,15 +36,20 @@ Dersler YouTube'da ücretsiz olarak yayımlanmaktadır.
 1. Kullanıcı Oluşturma
 
 ```
-   adduser kullanici_adi  # adduser baris
+   adduser kullanici_adi  # adduser ferhat
 ```
    
 2. Oluşturulan yeni kullanıcıya sudo (yönetici) yetkisi verme
 
 ```
-   usermod -aG sudo kullanici_adi  # usermod -aG sudo baris
+   usermod -aG sudo kullanici_adi  # usermod -aG sudo ferhat
 ```
 
+3. (Sunucuda yapılacak) Root kullanıcısından normal kullanıcıya geçiş yapma:
+
+```
+   su - kullanici_adi  # su - ferhat
+```
 ### [SSH Yapılandırması](#ssh)
 
 #### [Anahtar Uretimi ve Kullanımı](#anahtar)
@@ -64,7 +69,7 @@ Dersler YouTube'da ücretsiz olarak yayımlanmaktadır.
 3. (Sunucuda yapılacak) Root kullanıcısından normal kullanıcıya geçiş yapma:
 
 ```
-   su - kullanici_adi  # su - baris
+   su - kullanici_adi  # su - ferhat
 ```
 
 4. (Sunucuda yapılacak) Yeni kullanıcı için `.ssh` klasörünün oluşturulması ve klasöre kısıtlı izin verilmesi:
@@ -139,8 +144,8 @@ Dersler YouTube'da ücretsiz olarak yayımlanmaktadır.
 ### [Python3, PostgreSQL ve Nginx bileşenlerinin yuklenmesi](#kurulum)
 
 ```
-  sudo apt-get update
-  sudo apt-get install python3-pip python3-dev libpq-dev postgresql postgresql-contrib nginx
+  sudo apt update
+  sudo apt install python3-pip python3-dev libpq-dev postgresql postgresql-contrib nginx curl
 ```
 
 ### [PostgreSQL Yapılandırması](#postgresql)
@@ -189,7 +194,7 @@ Dersler YouTube'da ücretsiz olarak yayımlanmaktadır.
 
 ```
   sudo -H pip3 install --upgrade pip
-  sudo -H pip3 install virtualenv
+  sudo -H pip3 install virtualenv      
 ```
 
 **Not:** *"locale.Error: unsupported locale setting"* hatası için çözüm:
@@ -201,13 +206,12 @@ Dersler YouTube'da ücretsiz olarak yayımlanmaktadır.
 2. Örnek bir Django projesi GitHub'dan kopyalanıyor.
 
 ```
-  git clone https://github.com/barissaslan/eventhub.git
+  git clone https://github.com/ferhatft/nit.git
 ```
 
 3. Proje dizinine geçme ve `venv` adlı Sanal Python Ortamının oluşturulması
 
 ```
-  cd eventhub
   virtualenv venv
 ```
 
@@ -220,6 +224,7 @@ Dersler YouTube'da ücretsiz olarak yayımlanmaktadır.
 5. Proje bağımlılıklarının yüklenmesi
 
 ```
+  cd nit
   pip install -r requirements.txt
 ```
 
@@ -232,11 +237,11 @@ Dersler YouTube'da ücretsiz olarak yayımlanmaktadır.
 **Not:** Projenin settings.py dosyasının dizin hiyerarşisi aşağıdaki gibidir:
 
 ```
-/home/baris/eventhub/
+/home/ferhat/nit/
 		    /accounts/		
 		    /event/
-		    /eventhub/
-		   	     /__init__.py	
+		    /nit/
+		   	  /__init__.py	
 			     /settings.py
 			     /urls.py
 			     /wsgi.py
@@ -354,16 +359,16 @@ Description=gunicorn daemon
 After=network.target
 
 [Service]
-User=baris
+User=ferhat
 Group=www-data
-WorkingDirectory=/home/baris/eventhub
-ExecStart=/home/baris/eventhub/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/baris/eventhub/eventhub.sock eventhub.wsgi:application
-
+WorkingDirectory=/home/ferhat/nit
+ExecStart=/home/ferhat/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/ferhat/nit/nit.sock nit.wsgi:application
 [Install]
 WantedBy=multi-user.target
+
 ```
 
-**Not:** Sanal ortamın adı `venv`, projenin adı `eventhub`, kullanıcı adı `baris` olarak varsayılmıştır.
+**Not:** Sanal ortamın adı `venv`, projenin adı `nit`, kullanıcı adı `ferhat` olarak varsayılmıştır.
 
 **Not 2:** Dosyayı kaydetmek için `CTRL + X` yaptıktan sonra `y` harfine basıp, `enter` tuşuna basılmalı.
 
@@ -382,7 +387,7 @@ WantedBy=multi-user.target
 ```
 
 ```
-   ls /home/baris/eventhub
+   ls /home/ferhat/nit
    # ls çıktısında "proje_adı.sock" adlı (.sock) uzantılı bir soket dosyası görülüyorsa gunicorn başarılı bir şekilde yapılandırılmıştır.
 ```
 
@@ -391,7 +396,7 @@ WantedBy=multi-user.target
 1. Nginx sunucu bloğu açma:
 
 ```
-   sudo nano /etc/nginx/sites-available/eventhub
+   sudo nano /etc/nginx/sites-available/nit
 ```
 
    **Dosyanın içinde bulunması gerekenler:**
@@ -399,10 +404,12 @@ WantedBy=multi-user.target
 ```
 server {
     listen 80;
-    server_name alan_adi_veya_IP;
-    root /home/baris/eventhub; # Projenin kök dizini
-
-    location /static/ {
+    server_name  146.190.53.252 ;
+    root /home/ferhat/nit; # Projenin kök dizini
+    
+    client_max_body_size 50M;
+    
+    location /static/  {
     }
 
     location /media/ {
@@ -410,9 +417,10 @@ server {
 
     location / {
         include proxy_params;
-        proxy_pass http://unix:/home/baris/eventhub/eventhub.sock;  # Projenin kök dizinindeki 'proje_adı.sock' dosyası
+        proxy_pass http://unix:/home/ferhat/nit/nit.sock;  # Projenin kök dizinindeki 'proje_adı.sock' dosyası
     }
 }
+
 ```
 
 **Not:** Dosyayı kaydetmek için `CTRL + X` yaptıktan sonra `y` harfine basıp, `enter` tuşuna basılmalı.
@@ -420,7 +428,7 @@ server {
 2. Nginx dosyasını aktif etmek için dosyayı **`sites-enabled`** dizinine link olarak verme
 
 ```
-   sudo ln -s /etc/nginx/sites-available/eventhub /etc/nginx/sites-enabled
+sudo ln -s /etc/nginx/sites-available/nit /etc/nginx/sites-enabled
 ```
 
 3. Nginx yapılandırma dosyalarında *syntax* hatası olup olmadığını kontrol etme
@@ -444,7 +452,7 @@ server {
 
 ### [Yayın ve Geliştirme Ortamları için Ayrı Ayar Dosyaları](#seperate-settings)
 
-1. `settings.py` dosyasının bulunduğu dizinde (`/home/baris/eventhub/eventhub` klasörü içinde ) *settings* adında bir Python Paketi (içinde \_\_init\_\_.py dosyası bulunan bir klasör) oluşturulur.
+1. `settings.py` dosyasının bulunduğu dizinde (`/home/ferhat/eventhub/eventhub` klasörü içinde ) *settings* adında bir Python Paketi (içinde \_\_init\_\_.py dosyası bulunan bir klasör) oluşturulur.
 
 2. settings.py dosyası yeni oluşturulan pakete taşınır ve adı `base.py` olarak değiştirilir.
 
@@ -478,7 +486,7 @@ server {
 8. Projenin dizin hiyerarşisi:
 
 ```
-/home/baris/eventhub/
+/home/ferhat/eventhub/
 		    /accounts/		
 		    /event/
 		    /eventhub/
@@ -530,7 +538,7 @@ server {
 ```
 server {
     listen 80;
-    server_name alan_adınız www.alan_adınız; # server_name aslanbaris.com www.aslanbaris.com
+    server_name alan_adınız www.alan_adınız; # server_name aslanferhat.com www.aslanferhat.com
 
     location / {
 	return 302 https://$host$request_uri;
@@ -556,7 +564,7 @@ server {
         alias /var/www/cert/.well-known;
     }
 
-    root /home/kullanıcı_adı/proje_adı;  # root /home/baris/eventhub
+    root /home/kullanıcı_adı/proje_adı;  # root /home/ferhat/eventhub
     
     location /static/ {
     }
@@ -566,7 +574,7 @@ server {
 
     location / {
         include proxy_params;
-        proxy_pass http://unix:/home/kullanıcı_adı/proje_adı/proje_adı.sock; # proxy_pass http://unix:/home/baris/eventhub/eventhub.sock;
+        proxy_pass http://unix:/home/kullanıcı_adı/proje_adı/proje_adı.sock; # proxy_pass http://unix:/home/ferhat/eventhub/eventhub.sock;
 	
     }
 }

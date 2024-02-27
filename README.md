@@ -145,8 +145,14 @@ Dersler YouTube'da ücretsiz olarak yayımlanmaktadır.
 
 ```
   sudo apt update
-  sudo apt install python3-pip python3-dev libpq-dev postgresql postgresql-contrib nginx curl
+  sudo apt install python3-pip python3-dev libpq-dev curl tree 
 ```
+---
+```
+sudo apt install  nginx postgresql postgresql-contrib 
+```
+
+---
 
 ### [PostgreSQL Yapılandırması](#postgresql)
 
@@ -206,7 +212,7 @@ Dersler YouTube'da ücretsiz olarak yayımlanmaktadır.
 2. Örnek bir Django projesi GitHub'dan kopyalanıyor.
 
 ```
-  git clone https://github.com/ferhatft/nit.git
+  git clone https://github.com/ferhatft/test.git
 ```
 
 3. Proje dizinine geçme ve `venv` adlı Sanal Python Ortamının oluşturulması
@@ -224,7 +230,7 @@ Dersler YouTube'da ücretsiz olarak yayımlanmaktadır.
 5. Proje bağımlılıklarının yüklenmesi
 
 ```
-  cd nit
+  cd test
   pip install -r requirements.txt
 ```
 
@@ -237,10 +243,10 @@ Dersler YouTube'da ücretsiz olarak yayımlanmaktadır.
 **Not:** Projenin settings.py dosyasının dizin hiyerarşisi aşağıdaki gibidir:
 
 ```
-/home/ferhat/nit/
+/home/ferhat/test/
 		    /accounts/		
 		    /event/
-		    /nit/
+		    /test/
 		   	  /__init__.py	
 			     /settings.py
 			     /urls.py
@@ -361,14 +367,14 @@ After=network.target
 [Service]
 User=ferhat
 Group=www-data
-WorkingDirectory=/home/ferhat/nit
-ExecStart=/home/ferhat/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/ferhat/nit/nit.sock nit.wsgi:application
+WorkingDirectory=/home/ferhat/test
+ExecStart=/home/ferhat/venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/ferhat/test/test.sock test.wsgi:application
 [Install]
 WantedBy=multi-user.target
 
 ```
 
-**Not:** Sanal ortamın adı `venv`, projenin adı `nit`, kullanıcı adı `ferhat` olarak varsayılmıştır.
+**Not:** Sanal ortamın adı `venv`, projenin adı `test`, kullanıcı adı `ferhat` olarak varsayılmıştır.
 
 **Not 2:** Dosyayı kaydetmek için `CTRL + X` yaptıktan sonra `y` harfine basıp, `enter` tuşuna basılmalı.
 
@@ -387,7 +393,7 @@ WantedBy=multi-user.target
 ```
 
 ```
-   ls /home/ferhat/nit
+   ls /home/ferhat/test
    # ls çıktısında "proje_adı.sock" adlı (.sock) uzantılı bir soket dosyası görülüyorsa gunicorn başarılı bir şekilde yapılandırılmıştır.
 ```
 
@@ -396,7 +402,7 @@ WantedBy=multi-user.target
 1. Nginx sunucu bloğu açma:
 
 ```
-   sudo nano /etc/nginx/sites-available/nit
+   sudo nano /etc/nginx/sites-available/test
 ```
 
    **Dosyanın içinde bulunması gerekenler:**
@@ -404,8 +410,8 @@ WantedBy=multi-user.target
 ```
 server {
     listen 80;
-    server_name  146.190.53.252 ;
-    root /home/ferhat/nit; # Projenin kök dizini
+    server_name  178.157.14.97 domainname.com ;
+    root /home/ferhat/test; # Projenin kök dizini
     
     client_max_body_size 50M;
     
@@ -417,7 +423,7 @@ server {
 
     location / {
         include proxy_params;
-        proxy_pass http://unix:/home/ferhat/nit/nit.sock;  # Projenin kök dizinindeki 'proje_adı.sock' dosyası
+        proxy_pass http://unix:/home/ferhat/test/test.sock;  # Projenin kök dizinindeki 'proje_adı.sock' dosyası
     }
 }
 
@@ -428,7 +434,7 @@ server {
 2. Nginx dosyasını aktif etmek için dosyayı **`sites-enabled`** dizinine link olarak verme
 
 ```
-sudo ln -s /etc/nginx/sites-available/nit /etc/nginx/sites-enabled
+sudo ln -s /etc/nginx/sites-available/test/etc/nginx/sites-enabled
 ```
 
 3. Nginx yapılandırma dosyalarında *syntax* hatası olup olmadığını kontrol etme
@@ -600,3 +606,4 @@ server {
 
 [2] https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postgres-nginx-and-gunicorn-on-ubuntu-16-04
 
+#start #env #deploy
